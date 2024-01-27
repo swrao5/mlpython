@@ -1,11 +1,13 @@
+print("running fine")
 import os
 import config
 import argparse
 import joblib
+import model_dispatcher
 import pandas as pd
 from sklearn import metrics
 from sklearn import tree
-def run(fold):
+def run(fold,model):
    # read the training data with folds
    df = pd.read_csv(config.TRAINING_FILE)
    # training data is where kfold is not equal to provided fold
@@ -21,8 +23,8 @@ def run(fold):
    # similarly, for validation, we have
    x_valid = df_valid.drop("label", axis=1).values
    y_valid = df_valid.label.values
-   # initialize simple decision tree classifier from sklearn
-   clf = tree.DecisionTreeClassifier()
+   # fetch the model from model_dispatcher
+   clf = model_dispatcher.models[model]
    # fir the model on training data
    clf.fit(x_train, y_train)
    # create predictions for validation samples
@@ -42,7 +44,12 @@ if __name__ == "__main__":
    "--fold",
    type=int
    )
+   parser.add_argument(
+   "--model",
+   type=str
+   )
+
    # read the arguments from the command line
    args = parser.parse_args()
    # run the fold specified by command line arguments
-   run(fold=args.fold)
+   run(fold=args.fold, model=args.model)
